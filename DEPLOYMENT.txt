@@ -1,0 +1,39 @@
+DEPLOYMENT GUIDE
+================
+
+This guide will help you install Cerberus FUEF on your system.
+
+PREREQUISITES
+-------------
+*   Operating System: Linux (Kali Linux recommended), macOS, or Windows.
+*   Python: Version 3.10 or higher.
+
+INSTALLATION STEPS
+------------------
+
+1.  **Clone or Download**
+    Download the project files to your local machine.
+
+2.  **Install Dependencies**
+    Open your terminal, navigate to the project folder, and run:
+    
+    pip install -r requirements.txt
+
+    *Note: If you are on Kali Linux and encounter an "externally managed environment" error, you can either:*
+    *   Create a virtual environment (recommended):
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+    *   Or run the tool directly as a module without installing system-wide packages (if dependencies are already met).
+
+3.  **Verify Installation**
+    Run the help command to ensure everything is working:
+
+    python3 -m cerberus_fuef.main --help
+
+    You should see the Cerberus banner and a list of available commands.
+
+TROUBLESHOOTING
+---------------
+*   **Missing Module**: If you see `ModuleNotFoundError`, ensure you are running the command from the root `cerberus-fuef` directory and using `python3 -m cerberus_fuef.main`.
+*   **Permission Denied**: You may need to use `sudo` if you are writing to protected directories, but avoid running as root if possible.

