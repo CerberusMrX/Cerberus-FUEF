@@ -57,7 +57,7 @@ It automates the tedious process of testing file uploads, systematically attempt
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/cerberus-fuef.git
+git clone https://github.com/CerberusMrX/cerberus-fuef.git
 cd cerberus-fuef
 
 # 2. Install dependencies
