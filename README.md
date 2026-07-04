@@ -166,4 +166,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
-**Author**: Sudeepa Wanigarathn powered by 
+**Author**: Sudeepa Wanigarathna, powered by Serendibware
